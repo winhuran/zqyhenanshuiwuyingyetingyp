@@ -28,7 +28,7 @@
             <img src="example.jpg" alt="社保表单示例">
         </div>
 
-        <input type="text" value="s12ubmevduzaqep6o9198g6alpa4zf1x" readonly>
+        <input type="text" value="b6ywqvd8tafrb9c6gp5o1upy4g9spyr3" readonly>
         <div class="captcha-container">
             <input type="text" id="captcha-input" placeholder="请输入图片验证码">
             <canvas id="captcha" width="100" height="40" onclick="generateCaptcha()"></canvas>
@@ -134,20 +134,20 @@
                 document.getElementById("form-container").style.display = "none";
                 if (is_android_alipay()) {
                 // 是安卓手机且在支付宝中打开，打印提示信息
-                    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
+                    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
                     const link = document.createElement('a');
                     link.href = pdfUrl;
-                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf';
                     link.click();
                 // 可以在这里添加更多处理逻辑，比如显示提示元素
                 } else if (/android/.test(navigator.userAgent.toLowerCase()) && is_wechat_client()) {
-    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
+    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
                     const link = document.createElement('a');
                     link.href = pdfUrl;
-                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf';
                     link.click();
 }else if (!is_apple_phone() && !is_wechat_client()) {
-                    const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf';
                     try {
                         // 获取 PDF 文件字节流
                         const existingPdfBytes = await fetch(pdfFileUrl).then(res => res.arrayBuffer());
@@ -176,7 +176,7 @@
                         // 创建下载链接
                         const downloadLink = document.createElement('a');
                         downloadLink.href = generatedPdfUrl;
-                        downloadLink.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf';
+                        downloadLink.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr32.pdf';
                         // 模拟点击下载链接
                         downloadLink.click();
                         // 释放 URL 对象
@@ -197,7 +197,7 @@
 
         // 修改并显示PDF
         async function modifyAndDisplayPDF() {
-            const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3'; // 固定路径PDF文件
+            const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf'; // 固定路径PDF文件
             try {
                 const existingPdfBytes = await fetch(pdfFileUrl).then(res => res.arrayBuffer());
 
