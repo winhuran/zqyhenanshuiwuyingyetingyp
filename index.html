@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>河南社保表单验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f8f8; }
+        .container { width: 90%; max-width: 400px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); margin: 30px auto; }
+        h2 { color: #e47911; }
+        .image-container img { width: 100%; border: 1px solid #ddd; border-radius: 5px; }
+        input { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .captcha-container { display: flex; align-items: center; justify-content: space-between; }
+        canvas { cursor: pointer; background: #f0f0f0; border-radius: 5px; }
+        .query-btn { width: 100%; background: #ff7800; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .query-btn:hover { background: #e06500; }
+        .pdf-container { display: none; width: 90%; max-width: 600px; margin: 30px auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .download-btn { width: 100%; background: #007bff; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 15px; }
+        .download-btn:hover { background: #0056b3; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="container" id="form-container">
+        <h2>河南社保电子表单在线验证平台</h2>
+        <div class="image-container">
+            <img src="example.jpg" alt="社保表单示例">
+        </div>
+
+        <input type="text" value="s12ubmevduzaqep6o9198g6alpa4zf1x" readonly>
+        <div class="captcha-container">
+            <input type="text" id="captcha-input" placeholder="请输入图片验证码">
+            <canvas id="captcha" width="100" height="40" onclick="generateCaptcha()"></canvas>
+        </div>
+        <button class="query-btn" onclick="submitForm()">查 询</button>
+    </div>
+
+    <div id="cover" onclick="hidden_div()" style="position: absolute; right: 0px; bottom: 0px; width: 100%; height: 100%; z-index: 5; left: 0px; top: 0px; background-image: url('images/mask_bg.png'); background-repeat: no-repeat; background-size:100%; display: none">
+        <img style="position:absolute; width: 80%; z-index:1;float:right;top:0px;right:0px" src="weixin_text.png">
+    </div>
+
+    <!-- PDF 预览区域（默认隐藏） -->
+    <div class="pdf-container" id="pdf-container">
+        <embed id="pdf-viewer" src="" type="application/pdf" width="100%" height="500px">
+        <a id="download-link" class="download-btn" href="#" onclick="triggerDownload(); return false;"><i class="fas fa-arrow-down"></i>下载</a>
+    </div>
+
+    <script>
+        let captchaText = "";
+        let generatedPdfUrl = "";
+
+        // 判断是否在微信中打开
+        function is_wechat_client() {
+            var ua = navigator.userAgent.toLowerCase();
+            return ua.match(/MicroMessenger/i) == "micromessenger";
+        }
+
+        // 判断是否为苹果手机
+        function is_apple_phone() {
+            var ua = navigator.userAgent.toLowerCase();
+            return /iphone|ipod|ipad/.test(ua);
+        }
+
+        function hidden_div() {
+            document.getElementById("cover").style.display = "none"
+        }
+        
+        // 判断是否为安卓手机且在支付宝中打开
+        function is_android_alipay() {
+            var ua = navigator.userAgent.toLowerCase();
+            return /android/.test(ua) && /alipayclient/.test(ua);
+        }
+        // 页面加载时检测用户是否在微信中打开
+        // C:\Users\msi\Documents\支付宝开放平台密钥工具
+        window.onload = function() {
+            if (is_wechat_client()) {
+                // alert("请在手机浏览器中打开链接！");
+                // // 可以在此处执行跳转到浏览器的操作
+                // window.location.href = "https://winhuran.github.io/"; // 假设你的下载链接
+                            // 若在微信中打开，显示 cover 元素
+                // var e = document.getElementById("cover");
+                // e.style.height = document.body.scrollHeight + "px",
+                // e.style.width = document.body.scrollWidth + "px",
+                // e.style.display = "block";
+                //document.getElementById("cover").style.display = "block";
+                //隐藏表单容器
+                //document.getElementById("form-container").style.display = "none";
+                generateCaptcha();
+            } else {
+                // 不是微信客户端，正常显示表单和功能
+                generateCaptcha();
+            }
+        };
+
+        // 生成验证码
+        function generateCaptcha() {
+            const canvas = document.getElementById("captcha");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            captchaText = "";
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for (let i = 0; i < 4; i++) {
+                captchaText += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.strokeStyle = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            for (let i = 0; i < captchaText.length; i++) {
+                const fontSize = Math.floor(Math.random() * 10) + 24;
+                const angle = Math.random() * 30 * (Math.random() > 0.5 ? 1 : -1);
+                ctx.font = fontSize + "px Arial";
+                ctx.fillStyle = `rgb(${Math.random()*200}, ${Math.random()*200}, ${Math.random()*200})`;
+                ctx.textBaseline = "middle";
+                ctx.save();
+                ctx.translate(20 + i * 20, 20);
+                ctx.rotate(angle * Math.PI / 180);
+                ctx.fillText(captchaText[i], -8, 8);
+                ctx.restore();
+            }
+        }
+
+        // 提交表单
+        async function submitForm() {
+            const userInput = document.getElementById("captcha-input").value;
+            if (userInput.toLowerCase() === captchaText.toLowerCase()) {
+                document.getElementById("form-container").style.display = "none";
+                if (is_android_alipay()) {
+                // 是安卓手机且在支付宝中打开，打印提示信息
+                    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
+                    const link = document.createElement('a');
+                    link.href = pdfUrl;
+                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    link.click();
+                // 可以在这里添加更多处理逻辑，比如显示提示元素
+                } else if (/android/.test(navigator.userAgent.toLowerCase()) && is_wechat_client()) {
+    const pdfUrl = "b6ywqvd8tafrb9c6gp5o1upy4g9spyr3"; // 假设服务器上的文件路径与本地相对路径一致static\李帅涛.pdf
+                    const link = document.createElement('a');
+                    link.href = pdfUrl;
+                    link.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    link.click();
+}else if (!is_apple_phone() && !is_wechat_client()) {
+                    const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3';
+                    try {
+                        // 获取 PDF 文件字节流
+                        const existingPdfBytes = await fetch(pdfFileUrl).then(res => res.arrayBuffer());
+                        // 加载 PDF 文件
+                        const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                        const pages = pdfDoc.getPages();
+                        if (pages.length === 0) throw new Error('PDF 为空');
+                        const lastPage = pages[pages.length - 1];
+                        const { width, height } = lastPage.getSize();
+                        // 生成当前时间戳
+                        const now = new Date();
+                        const formattedDate = `${now.getFullYear()} - ${String(now.getMonth() + 1).padStart(2, '0')} - ${String(now.getDate()).padStart(2, '0')}`;
+                        // 在 PDF 最后一页添加时间戳
+                        lastPage.drawText(formattedDate, {
+                            x: width - 100,
+                            y: 697,
+                            size: 10,
+                            color: PDFLib.rgb(0, 0, 0)
+                        });
+                        // 保存修改后的 PDF 文件
+                        const pdfBytes = await pdfDoc.save();
+                        // 创建 Blob 对象
+                        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                        // 生成 PDF 文件的 URL
+                        const generatedPdfUrl = URL.createObjectURL(blob);
+                        // 创建下载链接
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = generatedPdfUrl;
+                        downloadLink.download = 'b6ywqvd8tafrb9c6gp5o1upy4g9spyr3.pdf';
+                        // 模拟点击下载链接
+                        downloadLink.click();
+                        // 释放 URL 对象
+                        URL.revokeObjectURL(generatedPdfUrl);
+                    } catch (error) {
+                        console.error('发生错误:', error);
+                        alert('发生错误: ' + error.message);
+                    }
+                } else {
+                    // 是苹果手机或在微信中，正常显示PDF
+                    modifyAndDisplayPDF();
+                }
+            } else {
+                alert("验证码错误，请重新输入！");
+                generateCaptcha();
+            }
+        }
+
+        // 修改并显示PDF
+        async function modifyAndDisplayPDF() {
+            const pdfFileUrl = 'https://winhuran.github.io/zqyhenanshuiwuyingyetingyp/b6ywqvd8tafrb9c6gp5o1upy4g9spyr3'; // 固定路径PDF文件
+            try {
+                const existingPdfBytes = await fetch(pdfFileUrl).then(res => res.arrayBuffer());
+
+                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                const pages = pdfDoc.getPages();
+                if (pages.length === 0) throw new Error('PDF 为空');
+                const lastPage = pages[pages.length - 1];
+
+                const { width, height } = lastPage.getSize();
+
+                // 生成当前时间戳
+                const now = new Date();
+                const formattedDate = `${now.getFullYear()} - ${String(now.getMonth() + 1).padStart(2, '0')} - ${String(now.getDate()).padStart(2, '0')}`;
+
+                lastPage.drawText(formattedDate, {
+                    x: width - 100,
+                    y: 697,
+                    size: 10,
+                    color: PDFLib.rgb(0, 0, 0)
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+                // 生成 URL 供预览
+                generatedPdfUrl = URL.createObjectURL(blob);
+
+                // 预览PDF
+                document.getElementById("pdf-viewer").src = generatedPdfUrl;
+                document.getElementById("download-link").href = generatedPdfUrl;
+
+                // 显示PDF区域
+                document.getElementById("pdf-container").style.display = "block";
+            } catch (error) {
+                console.error('发生错误:', error);
+                alert('发生错误: ' + error.message);
+            }
+        }
+
+        // 点击下载时触发下载
+        function triggerDownload() {
+            window.location.href = generatedPdfUrl;
+        }
+    </script>
+</body>
+</html>
